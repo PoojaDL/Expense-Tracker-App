@@ -6,6 +6,7 @@ import Home from "./Components/HomePage/Home";
 import { Redirect } from "react-router-dom/cjs/react-router-dom.min";
 import { useContext } from "react";
 import AuthContext from "./Store/auth-context";
+import Profile from "./Components/ProfilePage/Profile";
 
 function App() {
   const authCtx = useContext(AuthContext);
@@ -30,6 +31,11 @@ function App() {
         {authCtx.isLoggedIn && (
           <Route path="/Home">
             <Home />
+          </Route>
+        )}
+        {authCtx.isLoggedIn && (
+          <Route path="/Profile">
+            <Profile />
           </Route>
         )}
       </switch>
