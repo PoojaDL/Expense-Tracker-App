@@ -1,9 +1,11 @@
-import { Fragment, useRef, useState } from "react";
+import { Fragment, useContext, useRef, useState } from "react";
 import classes from "./Login.module.css";
 import { Form } from "react-bootstrap";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
+import AuthContext from "../../Store/auth-context";
 
 const Login = () => {
+  const authCtx = useContext(AuthContext);
   const history = useHistory();
   const [isLogin, setIsLogin] = useState(true);
   const [load, setLoad] = useState(false);
@@ -63,6 +65,7 @@ const Login = () => {
         })
         .then((data) => {
           console.log(data);
+          authCtx.login(data);
           if (isLogin) {
             history.replace("./");
           } else {
