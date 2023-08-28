@@ -9,10 +9,12 @@ import {
 import AuthContext from "../../Store/auth-context";
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
 import { Button, Form } from "react-bootstrap";
+import ExpenseItem from "./ExpenseItem";
 
 const Home = () => {
   const [content, setContent] = useState("");
   const [expenseList, setExpenses] = useState([]);
+  // let expensesList=[];
   const authCtx = useContext(AuthContext);
 
   const expenseInput = useRef();
@@ -52,8 +54,9 @@ const Home = () => {
     authCtx.logout();
   };
 
-  const expenseFormSubmit = (event) => {
+  const expenseFormSubmit = (event, id) => {
     event.preventDefault();
+    console.log(true, id);
 
     const dataEntered = {
       expense: expenseInput.current.value,
@@ -81,7 +84,10 @@ const Home = () => {
           });
         }
       })
-      .then((data) => console.log(data))
+      .then((data) => {
+        console.log(data);
+        fetchExpenses();
+      })
       .catch((error) => alert(error));
   };
 
@@ -91,6 +97,7 @@ const Home = () => {
     )
       .then((res) => res.json())
       .then((data) => {
+        const items = [];
         for (const key in data) {
           const fetchedData = {
             key: key,
@@ -98,16 +105,23 @@ const Home = () => {
             description: data[key].description,
             category: data[key].category,
           };
-          console.log(fetchedData);
-          setExpenses((prevExpenses) => [...prevExpenses, fetchedData]);
+          items.push(fetchedData);
         }
-        console.log(expenseList);
+        setExpenses(items);
       });
   }, []);
 
   useEffect(() => {
     fetchExpenses();
   }, [fetchExpenses]);
+
+  const updateExpenses = (data) => {
+    console.log(data);
+    expenseInput.current.value = data.expense;
+    descInput.current.value = data.description;
+    categoryInput.current.value = data.category;
+    expenseFormSubmit(true, data.id);
+  };
 
   return (
     <Fragment>
@@ -148,17 +162,23 @@ const Home = () => {
         </Form>
       </div>
 
-      {/* <div>
+      <div>
         {expenseList.length > 0 && (
           <ul>
             {expenseList.map((item) => (
-              <li>
-                {`${item.expense} - ${item.description} - ${item.category}`}
-              </li>
+              <ExpenseItem
+                key={item.key}
+                id={item.key}
+                expense={item.expense}
+                description={item.description}
+                category={item.category}
+                callfunction={fetchExpenses}
+                update={updateExpenses}
+              />
             ))}
           </ul>
         )}
-      </div> */}
+      </div>
     </Fragment>
   );
 };
