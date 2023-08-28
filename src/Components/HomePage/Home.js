@@ -1,4 +1,11 @@
-import { Fragment, useContext, useRef, useState } from "react";
+import {
+  Fragment,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import AuthContext from "../../Store/auth-context";
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
 import { Button, Form } from "react-bootstrap";
@@ -48,19 +55,59 @@ const Home = () => {
   const expenseFormSubmit = (event) => {
     event.preventDefault();
 
-    setExpenses((prevExpenses) => {
-      return [
-        ...prevExpenses,
-        {
-          expense: expenseInput.current.value,
-          description: descInput.current.value,
-          category: categoryInput.current.value,
-        },
-      ];
-    });
+    const dataEntered = {
+      expense: expenseInput.current.value,
+      description: descInput.current.value,
+      category: categoryInput.current.value,
+    };
 
-    console.log(expenseList);
+    fetch(
+      "https://expenses-list-34d5f-default-rtdb.firebaseio.com/expenses.json",
+      {
+        method: "POST",
+        body: JSON.stringify(dataEntered),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then((res) => {
+        if (res.ok) {
+          return res.json();
+        } else {
+          return res.json().then((data) => {
+            let errorMessage = data.error.message;
+            throw new Error(errorMessage);
+          });
+        }
+      })
+      .then((data) => console.log(data))
+      .catch((error) => alert(error));
   };
+
+  const fetchExpenses = useCallback(() => {
+    fetch(
+      "https://expenses-list-34d5f-default-rtdb.firebaseio.com/expenses.json"
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        for (const key in data) {
+          const fetchedData = {
+            key: key,
+            expense: data[key].expense,
+            description: data[key].description,
+            category: data[key].category,
+          };
+          console.log(fetchedData);
+          setExpenses((prevExpenses) => [...prevExpenses, fetchedData]);
+        }
+        console.log(expenseList);
+      });
+  }, []);
+
+  useEffect(() => {
+    fetchExpenses();
+  }, [fetchExpenses]);
 
   return (
     <Fragment>
@@ -101,7 +148,7 @@ const Home = () => {
         </Form>
       </div>
 
-      <div>
+      {/* <div>
         {expenseList.length > 0 && (
           <ul>
             {expenseList.map((item) => (
@@ -111,7 +158,7 @@ const Home = () => {
             ))}
           </ul>
         )}
-      </div>
+      </div> */}
     </Fragment>
   );
 };
