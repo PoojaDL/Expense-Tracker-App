@@ -7,6 +7,7 @@ import { Redirect } from "react-router-dom/cjs/react-router-dom.min";
 import { useContext } from "react";
 import AuthContext from "./Store/auth-context";
 import Profile from "./Components/ProfilePage/Profile";
+import ForgotPassword from "./Components/Login/ForgotPassword";
 
 function App() {
   const authCtx = useContext(AuthContext);
@@ -28,6 +29,11 @@ function App() {
         <Route path="/Login" exact>
           <Login />
         </Route>
+        {!authCtx.isLoggedIn && (
+          <Route path="/forgotpassword" exact>
+            <ForgotPassword />
+          </Route>
+        )}
         {authCtx.isLoggedIn && (
           <Route path="/Home">
             <Home />

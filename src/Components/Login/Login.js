@@ -1,7 +1,7 @@
 import { Fragment, useContext, useRef, useState } from "react";
 import classes from "./Login.module.css";
 import { Form } from "react-bootstrap";
-import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
+import { Link, useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import AuthContext from "../../Store/auth-context";
 
 const Login = () => {
@@ -116,6 +116,7 @@ const Login = () => {
               <Form.Control ref={confPassInput} type="password" />
             </Form.Group>
           )}
+          <Link to="/forgotpassword">forgot password?</Link>
           <div className={classes.actions}>
             {load ? (
               <p style={{ color: "black" }}>Sending request...</p>
