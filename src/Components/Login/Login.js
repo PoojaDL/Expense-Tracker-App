@@ -64,7 +64,6 @@ const Login = () => {
           }
         })
         .then((data) => {
-          console.log(data);
           authCtx.login(data);
           if (isLogin) {
             history.replace("./");

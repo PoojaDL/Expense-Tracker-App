@@ -14,7 +14,6 @@ const Home = () => {
 
   const verifyEmail = (event) => {
     event.preventDefault();
-    console.log(data.idToken);
 
     fetch(
       "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=AIzaSyC8wHsJTe8rHFeXPPHA5u0R9NWkWsuix3s",
@@ -30,7 +29,6 @@ const Home = () => {
       }
     ).then((res) => {
       if (res.ok) {
-        console.log(res);
         setContent("Verification code sent successfully");
       } else {
         res.json().then((res) => setContent(res.error.status));
@@ -38,9 +36,19 @@ const Home = () => {
     });
   };
 
+  const logoutHandler = () => {
+    authCtx.logout();
+  };
+
   return (
     <div>
-      <h1>Welcome to Expense Tracker</h1>
+      <h1 className="d-inline">Welcome to Expense Tracker</h1>
+      <Button
+        style={{ position: "absolute", right: "10px" }}
+        onClick={logoutHandler}
+      >
+        Logout
+      </Button>
       <p>
         Your Profile is inComplete
         <Link to="/Profile">Complete Now</Link>

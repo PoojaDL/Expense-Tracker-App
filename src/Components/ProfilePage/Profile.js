@@ -40,10 +40,10 @@ const Profile = () => {
           });
         }
       })
-      .then((data) => {
-        console.log(data);
+      .then(() => {
+        alert("Submitted successfully");
       })
-      .catch((error) => console.log(error));
+      .catch((error) => alert(error));
   };
 
   const fetchData = () => {
@@ -72,7 +72,7 @@ const Profile = () => {
       .then((data) => {
         setData(data.users[0]);
       })
-      .catch((error) => console.log(error));
+      .catch((error) => alert(error));
   };
 
   return (
