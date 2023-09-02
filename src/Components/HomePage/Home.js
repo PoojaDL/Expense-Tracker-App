@@ -1,29 +1,32 @@
-import {
-  Fragment,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import AuthContext from "../../Store/auth-context";
+import { Fragment, useCallback, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
-import { Button, Form } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import ExpenseItem from "./ExpenseItem";
+import NavigationBar from "../NavBar/NavigationBar";
+import styles from "./Home.module.css";
+import NewExpenseForm from "./NewExpenseForm";
+import { useDispatch, useSelector } from "react-redux";
+import { expenseActions } from "../../Store/expense-context";
 
 const Home = () => {
+  const themeRef = useRef();
+  // const [theme,setTheme]=useState("0")
   const [content, setContent] = useState("");
+  const [AllContent, setOtherContent] = useState("");
   const [expenseList, setExpenses] = useState([]);
-  // let expensesList=[];
-  const authCtx = useContext(AuthContext);
+  let premiumNeeded = false;
 
-  const expenseInput = useRef();
-  const descInput = useRef();
-  const categoryInput = useRef();
+  const authToken = useSelector((state) => state.auth.token);
+  const authId = authToken.idToken;
 
-  let data = authCtx.token;
-  if (typeof authCtx.token === "string") {
-    data = JSON.parse(authCtx.token);
+  const dispatch = useDispatch();
+
+  const totalExpensesCost = useSelector((state) => state.expense.totalCost);
+  if (totalExpensesCost >= 10000) {
+    premiumNeeded = true;
+  } else {
+    premiumNeeded = false;
   }
 
   const verifyEmail = (event) => {
@@ -34,7 +37,7 @@ const Home = () => {
       {
         method: "POST",
         body: JSON.stringify({
-          idToken: data.idToken,
+          idToken: authId,
           requestType: "VERIFY_EMAIL",
         }),
         headers: {
@@ -43,52 +46,19 @@ const Home = () => {
       }
     ).then((res) => {
       if (res.ok) {
-        setContent("Verification code sent successfully");
+        setContent(
+          "Verification code sent successfully, Check your mail and verify"
+        );
       } else {
-        res.json().then((res) => setContent(res.error.status));
+        res.json().then((res) => {
+          console.log(res.error);
+          return setContent(res.error.message);
+        });
       }
+      setTimeout(() => {
+        setContent("");
+      }, 3000);
     });
-  };
-
-  const logoutHandler = () => {
-    authCtx.logout();
-  };
-
-  const expenseFormSubmit = (event, id) => {
-    event.preventDefault();
-    console.log(true, id);
-
-    const dataEntered = {
-      expense: expenseInput.current.value,
-      description: descInput.current.value,
-      category: categoryInput.current.value,
-    };
-
-    fetch(
-      "https://expenses-list-34d5f-default-rtdb.firebaseio.com/expenses.json",
-      {
-        method: "POST",
-        body: JSON.stringify(dataEntered),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    )
-      .then((res) => {
-        if (res.ok) {
-          return res.json();
-        } else {
-          return res.json().then((data) => {
-            let errorMessage = data.error.message;
-            throw new Error(errorMessage);
-          });
-        }
-      })
-      .then((data) => {
-        console.log(data);
-        fetchExpenses();
-      })
-      .catch((error) => alert(error));
   };
 
   const fetchExpenses = useCallback(() => {
@@ -98,6 +68,7 @@ const Home = () => {
       .then((res) => res.json())
       .then((data) => {
         const items = [];
+        let totalCost = 0;
         for (const key in data) {
           const fetchedData = {
             key: key,
@@ -105,79 +76,107 @@ const Home = () => {
             description: data[key].description,
             category: data[key].category,
           };
-          items.push(fetchedData);
+          totalCost += +data[key].expense;
+          items.unshift(fetchedData);
         }
         setExpenses(items);
+        dispatch(expenseActions.addExpense(items));
+        dispatch(expenseActions.countTotal(totalCost));
       });
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     fetchExpenses();
   }, [fetchExpenses]);
 
-  const updateExpenses = (data) => {
-    console.log(data);
-    expenseInput.current.value = data.expense;
-    descInput.current.value = data.description;
-    categoryInput.current.value = data.category;
-    expenseFormSubmit(true, data.id);
+  const extraContent = (content) => {
+    setOtherContent(content);
+    setTimeout(() => {
+      setOtherContent("");
+    }, 2000);
+  };
+
+  const changeHandler = (e) => {
+    e.preventDefault();
+    console.log(e);
   };
 
   return (
     <Fragment>
-      <div>
-        <h1 className="d-inline">Welcome to Expense Tracker</h1>
-        <Button
-          style={{ position: "absolute", right: "10px" }}
-          onClick={logoutHandler}
-        >
-          Logout
-        </Button>
-        <p>
-          Your Profile is inComplete
-          <Link to="/Profile">Complete Now</Link>
-        </p>
-        <Button onClick={verifyEmail}>Verify Email</Button>
-        <p>{content}</p>
-      </div>
+      {console.log(themeRef)}
+      <div style={{ background: "darkgrey" }}>
+        <NavigationBar />
+        <div className={styles["main-div"]}>
+          <div>
+            <span aria-hidden="true">light</span>
+            <input
+              style={{ width: "50px" }}
+              type="range"
+              min="0"
+              max="1"
+              id="choice"
+              ref={themeRef}
+              onChange={changeHandler}
+            />
+            <span aria-hidden="true">dark</span>
+          </div>
+          <h1 className="py-4 px-2">Welcome to Expense Tracker</h1>
+          <p>
+            Your Profile is inComplete <Link to="/Profile">Complete Now</Link>
+          </p>
+          <p
+            style={{
+              background: "#42224B",
+              margin: "2% 10%",
+              color: "white",
+            }}
+          >
+            {content}
+          </p>
+          <Button onClick={verifyEmail}>Verify Email</Button>
+          {premiumNeeded && (
+            <Button
+              className="btn-danger d-block mx-auto my-3"
+              onClick={verifyEmail}
+            >
+              Activate Premium
+            </Button>
+          )}
+        </div>
 
-      <div>
-        <Form onSubmit={expenseFormSubmit}>
-          <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
-            <Form.Label>Expense</Form.Label>
-            <Form.Control type="number" ref={expenseInput} />
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
-            <Form.Label>Description</Form.Label>
-            <Form.Control type="text" ref={descInput} />
-          </Form.Group>
-          <Form.Label>Category</Form.Label>
-          <Form.Select aria-label="Default select example" ref={categoryInput}>
-            <option value="Petrol">Petrol</option>
-            <option value="Food">Food</option>
-            <option value="Rent">Rent</option>
-          </Form.Select>
-
-          <Button type="submit">Add Expense</Button>
-        </Form>
-      </div>
-
-      <div>
-        {expenseList.length > 0 && (
-          <ul>
-            {expenseList.map((item) => (
-              <ExpenseItem
-                key={item.key}
-                id={item.key}
-                expense={item.expense}
-                description={item.description}
-                category={item.category}
-                callfunction={fetchExpenses}
-                update={updateExpenses}
-              />
-            ))}
-          </ul>
+        <NewExpenseForm
+          fetchExpenses={fetchExpenses}
+          addNewItem={extraContent}
+        />
+        {extraContent && (
+          <div
+            style={{ background: "darkred", color: "white" }}
+            className="m-3"
+            align="center"
+          >
+            <p>
+              <b>{AllContent}</b>
+            </p>
+          </div>
         )}
+
+        <div align="center">
+          {expenseList.length > 0 && (
+            <ul className="p-0">
+              {expenseList.map((item) => (
+                <ExpenseItem
+                  key={item.key}
+                  id={item.key}
+                  expense={item.expense}
+                  description={item.description}
+                  category={item.category}
+                  callfunction={fetchExpenses}
+                  onAnyChange={extraContent}
+                />
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </Fragment>
   );

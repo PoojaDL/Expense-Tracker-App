@@ -1,0 +1,22 @@
+.items {
+  padding: 1rem;
+  width: 80%;
+  color: white;
+  background-color: #42224b;
+  margin: 1rem auto;
+  border-radius: 1rem;
+  border: 2px solid black;
+}
+
+@media (min-width: 900px) {
+  .items {
+    width: 60%;
+  }
+}
+
+.description {
+  font-size: larger;
+  font-weight: bolder;
+  padding: 0%;
+  margin: 0;
+}

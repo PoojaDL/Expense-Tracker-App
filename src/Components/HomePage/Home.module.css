@@ -1,0 +1,9 @@
+.main-div {
+  background-color: #ddc7bb;
+  text-align: center;
+  padding-bottom: 2rem;
+}
+
+.main-div h1 {
+  font: 4em sans-serif;
+}

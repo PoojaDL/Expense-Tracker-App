@@ -1,0 +1,13 @@
+.nav {
+  background-color: #42224b;
+  color: aliceblue;
+}
+
+.logoutBtn {
+  position: absolute;
+  right: 10px;
+}
+
+.logoutBtn:hover {
+  background-color: aliceblue;
+}

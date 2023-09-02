@@ -1,12 +1,16 @@
-import { Fragment, useContext, useRef, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import classes from "./Login.module.css";
 import { Form } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom/cjs/react-router-dom.min";
-import AuthContext from "../../Store/auth-context";
+import { useDispatch } from "react-redux";
+import { authActions } from "../../Store/auth-reducer";
+// import AuthContext from "../../Store/auth-context";
 
 const Login = () => {
-  const authCtx = useContext(AuthContext);
+  // const authCtx = useContext(AuthContext);
+  // const isAuthLogin = useSelector((state) => state.isLoggedIn);
   const history = useHistory();
+  const dispatch = useDispatch();
   const [isLogin, setIsLogin] = useState(true);
   const [load, setLoad] = useState(false);
   const emailInput = useRef();
@@ -19,7 +23,6 @@ const Login = () => {
 
   const formSubmitHandler = (event) => {
     event.preventDefault();
-    console.log(load);
 
     const email = emailInput.current.value;
     const password = passInput.current.value;
@@ -64,7 +67,7 @@ const Login = () => {
           }
         })
         .then((data) => {
-          authCtx.login(data);
+          dispatch(authActions.login(data));
           if (isLogin) {
             history.replace("./");
           } else {
@@ -84,7 +87,7 @@ const Login = () => {
   return (
     <Fragment>
       <div className={classes.auth}>
-        <Form onSubmit={formSubmitHandler} bg="black">
+        <Form onSubmit={formSubmitHandler}>
           <h1>{isLogin ? "Login" : "Sign Up"}</h1>
           <Form.Group
             className="mb-3"
@@ -116,7 +119,9 @@ const Login = () => {
               <Form.Control ref={confPassInput} type="password" />
             </Form.Group>
           )}
-          <Link to="/forgotpassword">forgot password?</Link>
+          <Link to="/forgotpassword" style={{ color: "red" }}>
+            forgot password?
+          </Link>
           <div className={classes.actions}>
             {load ? (
               <p style={{ color: "black" }}>Sending request...</p>
@@ -129,7 +134,7 @@ const Login = () => {
               className={classes.toggle}
               onClick={switchAuthModeHandler}
             >
-              <p style={{ color: "black" }}>
+              <p style={{ color: "white" }}>
                 {isLogin ? "Create new account" : "Login with existing account"}
               </p>
             </button>
